@@ -9,13 +9,13 @@ from PySide6.QtPrintSupport import QPrinter
 import db as DB
 
 NAVY = "#16324f"; DUE = "#9c3c34"
-def money(n): return "\u20b9" + f"{n:,.0f}"
+def money(n): return "₹" + f"{n:,.0f}"
 
 class Card(QFrame):
     def __init__(self, title, due=False):
         super().__init__(); self.setObjectName("card")
         v = QVBoxLayout(self); v.setContentsMargins(14, 10, 14, 10)
-        self.val = QLabel("\u20b90"); self.val.setObjectName("statv")
+        self.val = QLabel("₹0"); self.val.setObjectName("statv")
         if due: self.val.setProperty("class", "due"); self.val.setStyleSheet(f"color:{DUE};font-size:21px;font-weight:700;")
         lab = QLabel(title); lab.setObjectName("statl")
         v.addWidget(self.val); v.addWidget(lab)
@@ -128,8 +128,8 @@ class NewBill(QWidget):
         add = QPushButton("+ Add Item"); add.setObjectName("ghost"); add.clicked.connect(lambda: self._add_row())
         lay.addWidget(add)
         pay = QGridLayout(); pay.setSpacing(8)
-        self.adv = QDoubleSpinBox(); self.adv.setMaximum(10**9); self.adv.setPrefix("\u20b9 ")
-        self.dep = QDoubleSpinBox(); self.dep.setMaximum(10**9); self.dep.setPrefix("\u20b9 ")
+        self.adv = QDoubleSpinBox(); self.adv.setMaximum(10**9); self.adv.setPrefix("₹ ")
+        self.dep = QDoubleSpinBox(); self.dep.setMaximum(10**9); self.dep.setPrefix("₹ ")
         self.adv.valueChanged.connect(self._recalc); self.dep.valueChanged.connect(self._recalc)
         pay.addWidget(QLabel("Advance Paid"), 0, 0); pay.addWidget(self.adv, 0, 1)
         pay.addWidget(QLabel("Security Deposit (refundable)"), 0, 2); pay.addWidget(self.dep, 0, 3)
@@ -262,7 +262,7 @@ class Main(QMainWindow):
         side = QFrame(); side.setObjectName("sidebar"); side.setFixedWidth(215)
         sl = QVBoxLayout(side); sl.setContentsMargins(0, 0, 0, 0); sl.setSpacing(0)
         sl.addWidget(QLabel("Your Shop Name", objectName="brand"))
-        sl.addWidget(QLabel("Sale \u2022 Rental \u2022 Wedding Orders", objectName="brandsub"))
+        sl.addWidget(QLabel("Sale • Rental • Wedding Orders", objectName="brandsub"))
         self.navg = QButtonGroup(self); self.nav = []
         for i, label in enumerate(["Home", "Records", "New Bill", "Invoice Preview", "Backup"]):
             b = QPushButton(label); b.setObjectName("nav"); b.setCheckable(True)
@@ -294,7 +294,8 @@ class Main(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    with open(os.path.join(os.path.dirname(__file__), "style.qss")) as f:
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    with open(os.path.join(base, "style.qss")) as f:
         app.setStyleSheet(f.read())
     w = Main()
     if "--shot" in sys.argv or "--demo-shot" in sys.argv:
