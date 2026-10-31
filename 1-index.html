@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Shop Name - Billing Software (Design Sample)</title>
+<style>
+:root{
+  --navy:#16324f; --navy-2:#234a70; --ink:#1b2836; --muted:#5d6f82;
+  --line:#d8e0ea; --line-soft:#e6ecf3; --bg:#f3f6fa; --card:#ffffff;
+  --sale-bg:#e7eef7; --sale-tx:#1d4568;
+  --rent-bg:#e3efec; --rent-tx:#1f5a4e;
+  --wed-bg:#edeaf5; --wed-tx:#4c4272;
+  --ok-bg:#e5f1e7; --ok-tx:#256b32;
+  --warn-bg:#f0edf9; --warn-tx:#4c4272;
+  --due-tx:#9c3c34;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;}
+button{font-family:inherit;cursor:pointer;}
+.wrap{max-width:1000px;margin:0 auto;padding:0 14px 90px;}
+
+/* ---------- header ---------- */
+.topbar{background:var(--navy);color:#fff;}
+.topbar-in{max-width:1000px;margin:0 auto;padding:14px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.brand-name{font-size:18px;font-weight:700;letter-spacing:.3px;}
+.brand-sub{font-size:12px;color:#b9c9da;margin-top:1px;}
+.top-date{font-size:12px;color:#b9c9da;text-align:right;white-space:nowrap;}
+.topnav{display:none;max-width:1000px;margin:0 auto;padding:0 14px 10px;gap:6px;}
+.topnav button{background:transparent;border:1px solid rgba(255,255,255,.28);color:#dce6f2;font-size:13px;padding:6px 14px;border-radius:6px;}
+.topnav button.on{background:#fff;color:var(--navy);border-color:#fff;font-weight:600;}
+.demobar{background:#2c3e50;color:#dbe4ee;font-size:12px;text-align:center;padding:6px 12px;letter-spacing:.2px;}
+.demobar b{color:#fff;}
+
+/* ---------- dashboard ---------- */
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px;}
+.stat{background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:12px 14px;}
+.stat .v{font-size:20px;font-weight:700;color:var(--navy);}
+.stat .l{font-size:12px;color:var(--muted);margin-top:2px;}
+.stat.due .v{color:var(--due-tx);}
+
+.sec-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:20px 0 8px;}
+
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.acard{background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:16px 14px;text-align:left;display:flex;flex-direction:column;gap:8px;}
+.acard:hover{border-color:var(--navy-2);}
+.acard .ic{width:34px;height:34px;color:var(--navy);}
+.acard .t{font-size:15px;font-weight:700;color:var(--navy);}
+.acard .d{font-size:12px;color:var(--muted);}
+
+/* ---------- tables (excel style) ---------- */
+.tscroll{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;}
+table.grid{border-collapse:collapse;width:100%;font-size:13px;white-space:nowrap;}
+table.grid th{background:#eef2f7;color:var(--navy);font-weight:700;text-align:left;padding:7px 10px;border:1px solid var(--line);}
+table.grid td{padding:6px 10px;border:1px solid var(--line-soft);color:var(--ink);}
+table.grid tr:nth-child(even) td{background:#fafcfe;}
+td.num,th.num{text-align:center;}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.3px;}
+.b-sale{background:var(--sale-bg);color:var(--sale-tx);}
+.b-rent{background:var(--rent-bg);color:var(--rent-tx);}
+.b-wed{background:var(--wed-bg);color:var(--wed-tx);}
+.st-paid{color:var(--ok-tx);font-weight:600;}
+.st-active{color:var(--navy);font-weight:600;}
+.st-due{color:var(--due-tx);font-weight:600;}
+.st-ret{color:var(--muted);font-weight:600;}
+
+/* ---------- records ---------- */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px;}
+.chip{border:1px solid var(--line);background:#fff;color:var(--muted);font-size:13px;padding:6px 14px;border-radius:20px;}
+.chip.on{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600;}
+
+/* ---------- new bill form ---------- */
+.form{background:var(--card);border:1px solid var(--line-soft);border-radius:10px;padding:16px 14px;margin-top:14px;}
+.frow{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:12px;}
+label.fl{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px;}
+input.fi,select.fi{width:100%;border:1px solid var(--line);border-radius:7px;padding:9px 10px;font-size:14px;font-family:inherit;color:var(--ink);background:#fff;}
+input.fi:focus,select.fi:focus{outline:2px solid var(--navy-2);outline-offset:-1px;}
+.typepick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.typepick button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:10px 6px;font-size:13px;font-weight:600;color:var(--muted);}
+.typepick button.on{border:2px solid var(--navy);color:var(--navy);background:#f2f6fb;}
+.items-head,.irow{display:grid;grid-template-columns:1fr 64px 84px 84px 30px;gap:6px;align-items:center;}
+.items-head{font-size:11px;font-weight:700;color:var(--muted);padding:0 2px 4px;}
+.irow{margin-bottom:6px;}
+.irow input{padding:7px 8px;font-size:13px;}
+.irow .amt{font-size:13px;text-align:right;padding-right:4px;color:var(--ink);}
+.irow .del{border:none;background:none;color:#b03a30;font-size:16px;line-height:1;}
+.addrow{background:none;border:1px dashed var(--navy-2);color:var(--navy-2);font-size:13px;font-weight:600;border-radius:7px;padding:8px;width:100%;margin:4px 0 10px;}
+.totbox{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;display:grid;gap:4px;}
+.totline{display:flex;justify-content:space-between;font-size:14px;}
+.totline.big{font-size:16px;font-weight:700;color:var(--navy);}
+.totline.due{font-weight:700;color:var(--due-tx);}
+.savebtn{width:100%;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:700;margin-top:12px;}
+.savenote{font-size:11px;color:var(--muted);text-align:center;margin-top:8px;}
+.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:13px;padding:9px 18px;border-radius:20px;display:none;z-index:50;box-shadow:0 4px 14px rgba(0,0,0,.25);}
+
+/* ---------- invoice ---------- */
+.inv-actions{display:flex;gap:8px;margin:14px 0;flex-wrap:wrap;}
+.btn{border:1px solid var(--navy);background:var(--navy);color:#fff;font-size:13px;font-weight:600;padding:9px 16px;border-radius:7px;text-decoration:none;display:inline-block;}
+.btn.ghost{background:#fff;color:var(--navy);}
+.sheet{background:#fff;border:1px solid var(--line);border-radius:4px;max-width:820px;margin:0 auto;padding:26px 22px;box-shadow:0 2px 10px rgba(20,40,60,.06);}
+.sh-name{text-align:center;font-size:22px;font-weight:800;color:var(--navy);letter-spacing:1.5px;text-transform:uppercase;}
+.sh-addr{text-align:center;font-size:12px;color:var(--muted);margin-top:3px;}
+.sh-rule{border-top:2px solid var(--navy);margin:12px 0 2px;}
+.sh-rule2{border-top:1px solid var(--navy);margin-bottom:14px;}
+.sh-row{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
+.sh-to .h{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
+.sh-to .n{font-size:15px;font-weight:700;}
+.sh-to .m{font-size:12.5px;color:var(--muted);}
+.meta{border:1px solid var(--line);border-radius:6px;font-size:12.5px;min-width:220px;}
+.meta div{display:flex;justify-content:space-between;gap:14px;padding:5px 10px;border-bottom:1px solid var(--line-soft);}
+.meta div:last-child{border-bottom:none;}
+.meta .k{color:var(--muted);}
+.meta .val{font-weight:600;}
+table.inv{border-collapse:collapse;width:100%;font-size:13px;}
+table.inv th{background:#eef2f7;color:var(--navy);border:1px solid var(--line);padding:8px 10px;text-align:left;}
+table.inv td{border:1px solid var(--line);padding:7px 10px;}
+table.inv td.c,table.inv th.c{text-align:center;}
+table.inv td.r,table.inv th.r{text-align:right;padding-right:12px;}
+.inv-tots{margin-top:0;margin-left:auto;width:100%;max-width:300px;font-size:13.5px;}
+.inv-tots table{width:100%;border-collapse:collapse;}
+.inv-tots td{padding:6px 10px;border:1px solid var(--line-soft);}
+.inv-tots td.r{text-align:right;}
+.inv-tots .grand td{font-weight:800;color:var(--navy);border-top:2px solid var(--navy);font-size:15px;}
+.inv-tots .due td{font-weight:800;color:var(--due-tx);}
+.inv-note{font-size:12px;color:var(--muted);margin-top:14px;border:1px dashed var(--line);border-radius:6px;padding:8px 10px;}
+.inv-thanks{text-align:center;font-size:13.5px;font-weight:600;color:var(--navy);margin-top:16px;}
+.inv-demo{text-align:center;font-size:10.5px;color:#9aa8b6;margin-top:6px;}
+
+/* ---------- bottom nav ---------- */
+.bottomnav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:40;}
+.bottomnav button{flex:1;background:none;border:none;padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font-size:11px;font-weight:600;}
+.bottomnav button.on{color:var(--navy);}
+.bottomnav svg{width:22px;height:22px;}
+
+@media(min-width:768px){
+  .wrap{padding-bottom:40px;}
+  .topnav{display:flex;}
+  .bottomnav{display:none;}
+  .stats{grid-template-columns:repeat(4,1fr);}
+  .cards{grid-template-columns:repeat(4,1fr);}
+  .frow{grid-template-columns:1fr 1fr;}
+  .sheet{padding:40px 44px;}
+}
+@media(max-width:480px){
+  .irow{grid-template-columns:1fr 52px 68px 66px 26px;}
+}
+@media print{
+  body{background:#fff;}
+  .topbar,.demobar,.bottomnav,.topnav,.inv-actions,.toast{display:none!important;}
+  .wrap{padding:0;}
+  .sheet{border:none;box-shadow:none;border-radius:0;max-width:100%;padding:0;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div>
+      <div class="brand-name">Your Shop Name</div>
+      <div class="brand-sub">Sale &bull; Rental &bull; Wedding Orders</div>
+    </div>
+    <div class="top-date" id="topdate"></div>
+  </div>
+  <div class="topnav">
+    <button data-v="dashboard" class="on" onclick="go('dashboard')">Home</button>
+    <button data-v="records" onclick="go('records')">Records</button>
+    <button data-v="new" onclick="go('new')">New Bill</button>
+    <button data-v="invoice" onclick="go('invoice')">Invoice Preview</button>
+  </div>
+</div>
+<div class="demobar">DESIGN SAMPLE - <b>demo data only</b>, not a real shop &bull; aapke feedback ke baad final build</div>
+
+<div class="wrap">
+
+  <!-- ================= DASHBOARD ================= -->
+  <section id="view-dashboard">
+    <div class="stats">
+      <div class="stat"><div class="v" id="stToday">&#8377;0</div><div class="l">Today's Sales</div></div>
+      <div class="stat"><div class="v" id="stRent">0</div><div class="l">Active Rentals</div></div>
+      <div class="stat due"><div class="v" id="stDue">&#8377;0</div><div class="l">Pending Balance</div></div>
+      <div class="stat"><div class="v" id="stWed">0</div><div class="l">Wedding Orders</div></div>
+    </div>
+
+    <div class="sec-title">Quick Actions</div>
+    <div class="cards">
+      <button class="acard" onclick="newBill('Sale')">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0l-7-7V3h10.6l6.4 6.4a2 2 0 0 1 0 4z"/><circle cx="8" cy="8" r="1.6"/></svg>
+        <div class="t">New Sale Bill</div><div class="d">Kapde ka direct sale</div>
+      </button>
+      <button class="acard" onclick="newBill('Rental')">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+        <div class="t">New Rental</div><div class="d">Rent pe kapde, return date ke saath</div>
+      </button>
+      <button class="acard" onclick="newBill('Wedding')">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.6-9.3-9A5.4 5.4 0 0 1 12 7a5.4 5.4 0 0 1 9.3 5c-2.3 4.4-9.3 9-9.3 9z"/></svg>
+        <div class="t">Wedding Order</div><div class="d">Shaadi items, patakhe, arrangement</div>
+      </button>
+      <button class="acard" onclick="go('records')">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11M15 9v11"/></svg>
+        <div class="t">All Records</div><div class="d">Sale, rent, balance - sab hisaab</div>
+      </button>
+    </div>
+
+    <div class="sec-title">Recent Entries</div>
+    <div class="tscroll"><table class="grid" id="recentTable">
+      <thead><tr><th>No.</th><th>Date</th><th>Customer</th><th>Type</th><th class="num">Total (&#8377;)</th><th class="num">Balance (&#8377;)</th><th>Status</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <!-- ================= RECORDS ================= -->
+  <section id="view-records" style="display:none">
+    <div class="chips" id="chips">
+      <button class="chip on" data-f="All" onclick="setFilter('All')">All</button>
+      <button class="chip" data-f="Sale" onclick="setFilter('Sale')">Sale</button>
+      <button class="chip" data-f="Rental" onclick="setFilter('Rental')">Rental</button>
+      <button class="chip" data-f="Wedding" onclick="setFilter('Wedding')">Wedding Orders</button>
+    </div>
+    <div class="tscroll"><table class="grid" id="recordsTable">
+      <thead><tr><th>No.</th><th>Date</th><th>Customer</th><th>Mobile</th><th>Type</th><th>Items</th><th class="num">Total (&#8377;)</th><th class="num">Advance (&#8377;)</th><th class="num">Balance (&#8377;)</th><th>Return / Delivery</th><th>Status</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p class="savenote">Final build will have Excel export, date-wise reports and search here.</p>
+  </section>
+
+  <!-- ================= NEW BILL ================= -->
+  <section id="view-new" style="display:none">
+    <div class="form">
+      <div class="frow">
+        <div><label class="fl">Customer Name</label><input class="fi" id="fName" placeholder="e.g. Rahul Verma"></div>
+        <div><label class="fl">Mobile</label><input class="fi" id="fMobile" placeholder="98765 43210" inputmode="numeric"></div>
+      </div>
+      <label class="fl">Order Type</label>
+      <div class="typepick" id="typepick">
+        <button data-t="Sale" class="on" onclick="setType('Sale')">Sale</button>
+        <button data-t="Rental" onclick="setType('Rental')">Rental</button>
+        <button data-t="Wedding" onclick="setType('Wedding')">Wedding Order</button>
+      </div>
+      <div class="frow" style="margin-top:12px">
+        <div><label class="fl">Bill Date</label><input class="fi" id="fDate" type="date"></div>
+        <div id="retWrap"><label class="fl" id="retLabel">Return Date (Rental)</label><input class="fi" id="fReturn" type="date"></div>
+      </div>
+      <label class="fl">Items</label>
+      <div class="items-head"><span>Description</span><span>Qty</span><span>Rate</span><span style="text-align:right">Amount</span><span></span></div>
+      <div id="items"></div>
+      <button class="addrow" onclick="addItem()">+ Add Item</button>
+      <div class="frow">
+        <div><label class="fl">Advance Paid (&#8377;)</label><input class="fi" id="fAdv" type="number" min="0" value="0" oninput="calc()"></div>
+        <div><label class="fl">Security Deposit (&#8377;, rental)</label><input class="fi" id="fDep" type="number" min="0" value="0" oninput="calc()"></div>
+      </div>
+      <div class="totbox">
+        <div class="totline"><span>Total</span><span id="tTotal">&#8377;0</span></div>
+        <div class="totline"><span>Advance</span><span id="tAdv">&#8377;0</span></div>
+        <div class="totline due"><span>Balance Due</span><span id="tDue">&#8377;0</span></div>
+      </div>
+      <button class="savebtn" onclick="saveBill()">Save Bill</button>
+      <div class="savenote">Is sample mein entry sirf is preview ke liye hai. Final build mein data safely save + backup hoga.</div>
+    </div>
+  </section>
+
+  <!-- ================= INVOICE ================= -->
+  <section id="view-invoice" style="display:none">
+    <div class="inv-actions">
+      <button class="btn ghost" onclick="go('dashboard')">&larr; Back</button>
+      <button class="btn" onclick="window.print()">Print / PDF</button>
+      <button class="btn ghost" onclick="toast('WhatsApp share - final build mein customer ko direct jayega')">Share on WhatsApp</button>
+    </div>
+    <div class="sheet" id="sheet">
+      <div class="sh-name">Your Shop Name</div>
+      <div class="sh-addr">Shop No. 12, Main Market, Your City<br>Mo: 98765 43210 &nbsp;&bull;&nbsp; yourshop@email.com</div>
+      <div class="sh-rule"></div><div class="sh-rule2"></div>
+      <div class="sh-row">
+        <div class="sh-to">
+          <div class="h">Billed To</div>
+          <div class="n">Rahul Verma</div>
+          <div class="m">Mo: 90000 00001<br>Sample Colony, Demo City</div>
+        </div>
+        <div class="meta">
+          <div><span class="k">Invoice No.</span><span class="val">001</span></div>
+          <div><span class="k">Date</span><span class="val">31 Oct 2026</span></div>
+          <div><span class="k">Type</span><span class="val">Rental + Wedding Order</span></div>
+          <div><span class="k">Event Date</span><span class="val">02 Nov 2026</span></div>
+          <div><span class="k">Return Date</span><span class="val">04 Nov 2026</span></div>
+        </div>
+      </div>
+      <table class="inv">
+        <thead><tr><th class="c" style="width:44px">S.No</th><th>Description</th><th class="c" style="width:56px">Qty</th><th class="r" style="width:88px">Rate (&#8377;)</th><th class="r" style="width:104px">Amount (&#8377;)</th></tr></thead>
+        <tbody>
+          <tr><td class="c">1</td><td>Sherwani - Cream (Rental, 3 days)</td><td class="c">1</td><td class="r">2,500</td><td class="r">2,500</td></tr>
+          <tr><td class="c">2</td><td>Indo-Western Suit (Rental, 3 days)</td><td class="c">1</td><td class="r">1,800</td><td class="r">1,800</td></tr>
+          <tr><td class="c">3</td><td>Safa / Pagdi (Rental)</td><td class="c">6</td><td class="r">150</td><td class="r">900</td></tr>
+          <tr><td class="c">4</td><td>Firecracker Order - Wedding Pack</td><td class="c">1</td><td class="r">3,500</td><td class="r">3,500</td></tr>
+          <tr><td class="c">5</td><td>Stage Decoration Arrangement</td><td class="c">1</td><td class="r">4,000</td><td class="r">4,000</td></tr>
+        </tbody>
+      </table>
+      <div class="inv-tots"><table>
+        <tr><td>Subtotal</td><td class="r">&#8377;12,700</td></tr>
+        <tr><td>Security Deposit (refundable)</td><td class="r">&#8377;2,000</td></tr>
+        <tr class="grand"><td>Grand Total</td><td class="r">&#8377;14,700</td></tr>
+        <tr><td>Advance Paid</td><td class="r">&#8377;5,000</td></tr>
+        <tr class="due"><td>Balance Due</td><td class="r">&#8377;9,700</td></tr>
+      </table></div>
+      <div class="inv-note">Rental items are to be returned by 04 Nov 2026. Security deposit will be refunded on safe return of all items.</div>
+      <div class="inv-thanks">Thank you for your business!</div>
+      <div class="inv-demo">Demo invoice - sample data for design preview</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="bottomnav">
+  <button data-v="dashboard" class="on" onclick="go('dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</button>
+  <button data-v="records" onclick="go('records')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11M15 9v11"/></svg>Records</button>
+  <button data-v="new" onclick="go('new')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>New Bill</button>
+  <button data-v="invoice" onclick="go('invoice')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>Invoice</button>
+</div>
+
+<script>
+const fmt = n => '₹' + Number(n).toLocaleString('en-IN');
+let filter = 'All';
+let btype = 'Sale';
+let nextNo = 6;
+
+let records = [
+  {no:'001', date:'31 Oct', customer:'Rahul Verma',  mobile:'90000 00001', type:'Rental',  items:'Sherwani, Suit, Safa x6 + Wedding items', total:14700, adv:5000,  ret:'04 Nov', status:'Active'},
+  {no:'002', date:'31 Oct', customer:'Priya Singh',  mobile:'90000 00002', type:'Sale',    items:'Saree - Silk',                            total:2400,  adv:2400,  ret:'-',       status:'Paid'},
+  {no:'003', date:'30 Oct', customer:'Amit Gupta',   mobile:'90000 00003', type:'Wedding', items:'Full wedding package + firecrackers',     total:25000, adv:10000, ret:'05 Nov', status:'Advance'},
+  {no:'004', date:'30 Oct', customer:'Sneha Patel',  mobile:'90000 00004', type:'Rental',  items:'Lehenga (2 days)',                        total:6200,  adv:6200,  ret:'Returned',status:'Returned'},
+  {no:'005', date:'29 Oct', customer:'Vikram Yadav', mobile:'90000 00005', type:'Sale',    items:'Kurta set',                               total:1150,  adv:1150,  ret:'-',       status:'Paid'},
+];
+
+function badge(t){
+  if(t==='Sale') return '<span class="badge b-sale">SALE</span>';
+  if(t==='Rental') return '<span class="badge b-rent">RENT</span>';
+  return '<span class="badge b-wed">WEDDING</span>';
+}
+function stCls(s){
+  return {Paid:'st-paid',Active:'st-active',Returned:'st-ret',Advance:'st-due'}[s] || 'st-active';
+}
+function bal(r){ return r.total - r.adv; }
+
+function renderRecent(){
+  const tb = document.querySelector('#recentTable tbody');
+  tb.innerHTML = records.slice(0,5).map(r =>
+    `<tr><td>${r.no}</td><td>${r.date}</td><td>${r.customer}</td><td>${badge(r.type)}</td><td class="num">${r.total.toLocaleString('en-IN')}</td><td class="num">${bal(r).toLocaleString('en-IN')}</td><td class="${stCls(r.status)}">${r.status}</td></tr>`
+  ).join('');
+}
+function renderRecords(){
+  const tb = document.querySelector('#recordsTable tbody');
+  const rows = records.filter(r => filter==='All' || r.type===filter);
+  tb.innerHTML = rows.map(r =>
+    `<tr><td>${r.no}</td><td>${r.date}</td><td>${r.customer}</td><td>${r.mobile}</td><td>${badge(r.type)}</td><td>${r.items}</td><td class="num">${r.total.toLocaleString('en-IN')}</td><td class="num">${r.adv.toLocaleString('en-IN')}</td><td class="num">${bal(r).toLocaleString('en-IN')}</td><td>${r.ret}</td><td class="${stCls(r.status)}">${r.status}</td></tr>`
+  ).join('') || '<tr><td colspan="11" style="text-align:center;color:#5d6f82">No entries</td></tr>';
+}
+function renderStats(){
+  document.getElementById('stToday').textContent = fmt(records.filter(r=>r.date==='31 Oct').reduce((s,r)=>s+r.total,0));
+  document.getElementById('stRent').textContent = records.filter(r=>r.type==='Rental'&&r.status==='Active').length + 5;
+  document.getElementById('stDue').textContent = fmt(records.reduce((s,r)=>s+bal(r),0));
+  document.getElementById('stWed').textContent = records.filter(r=>r.type==='Wedding').length + 2;
+}
+function setFilter(f){
+  filter = f;
+  document.querySelectorAll('#chips .chip').forEach(c => c.classList.toggle('on', c.dataset.f===f));
+  renderRecords();
+}
+function go(v){
+  ['dashboard','records','new','invoice'].forEach(x => document.getElementById('view-'+x).style.display = x===v ? '' : 'none');
+  document.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v===v));
+  window.scrollTo(0,0);
+}
+function newBill(t){ setType(t); go('new'); }
+function setType(t){
+  btype = t;
+  document.querySelectorAll('#typepick button').forEach(b => b.classList.toggle('on', b.dataset.t===t));
+  const rw = document.getElementById('retWrap');
+  rw.style.display = t==='Sale' ? 'none' : '';
+  document.getElementById('retLabel').textContent = t==='Rental' ? 'Return Date (Rental)' : 'Delivery / Event Date';
+}
+function addItem(d='',q='',r=''){
+  const row = document.createElement('div');
+  row.className = 'irow';
+  row.innerHTML = `<input class="fi" placeholder="Item description" value="${d}">
+    <input class="fi q" type="number" min="0" value="${q}" oninput="calc()">
+    <input class="fi r" type="number" min="0" value="${r}" oninput="calc()">
+    <span class="amt">₹0</span>
+    <button class="del" onclick="this.parentElement.remove();calc()" title="Remove">&times;</button>`;
+  document.getElementById('items').appendChild(row);
+  calc();
+}
+function calc(){
+  let total = 0;
+  document.querySelectorAll('#items .irow').forEach(row => {
+    const q = parseFloat(row.querySelector('.q').value)||0;
+    const r = parseFloat(row.querySelector('.r').value)||0;
+    const a = q*r; total += a;
+    row.querySelector('.amt').textContent = fmt(a);
+  });
+  const adv = parseFloat(document.getElementById('fAdv').value)||0;
+  document.getElementById('tTotal').textContent = fmt(total);
+  document.getElementById('tAdv').textContent = fmt(adv);
+  document.getElementById('tDue').textContent = fmt(Math.max(total-adv,0));
+}
+function saveBill(){
+  const name = document.getElementById('fName').value.trim();
+  if(!name){ toast('Customer name daal dijiye'); return; }
+  let total = 0, desc = [];
+  document.querySelectorAll('#items .irow').forEach(row => {
+    const q = parseFloat(row.querySelector('.q').value)||0;
+    const r = parseFloat(row.querySelector('.r').value)||0;
+    total += q*r;
+    const d = row.querySelector('input').value.trim();
+    if(d) desc.push(d);
+  });
+  const adv = parseFloat(document.getElementById('fAdv').value)||0;
+  const no = String(nextNo++).padStart(3,'0');
+  records.unshift({
+    no, date:'31 Oct', customer:name,
+    mobile:document.getElementById('fMobile').value.trim()||'-',
+    type:btype, items:desc.join(', ')||'-', total, adv,
+    ret:document.getElementById('fReturn').value||'-',
+    status: adv>=total&&total>0 ? 'Paid' : (btype==='Rental'?'Active':(adv>0?'Advance':'Active'))
+  });
+  renderRecent(); renderRecords(); renderStats();
+  document.getElementById('fName').value=''; document.getElementById('fMobile').value='';
+  document.getElementById('fAdv').value=0; document.getElementById('fDep').value=0;
+  document.getElementById('items').innerHTML=''; addItem();
+  go('dashboard');
+  toast('Bill #'+no+' saved (demo)');
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(()=>t.style.display='none', 2600);
+}
+document.getElementById('topdate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+document.getElementById('fDate').valueAsDate = new Date();
+setType('Sale'); addItem('Sherwani (Rental, 3 days)',1,2500); addItem();
+renderRecent(); renderRecords(); renderStats();
+</script>
+</body>
+</html>
