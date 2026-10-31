@@ -1,0 +1,31 @@
+name: Windows build + tests
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r desktop/requirements.txt pyinstaller
+      - name: Data-layer tests
+        run: python desktop/tests/test_db.py
+      - name: Offscreen UI smoke test (demo mode, screenshots)
+        shell: bash
+        run: QT_QPA_PLATFORM=offscreen python desktop/app/main.py --demo --shot "$RUNNER_TEMP/shots"
+      - name: Build Windows app (PyInstaller one-dir)
+        run: pyinstaller --windowed --name ShopBilling --add-data "desktop/app/style.qss;." desktop/app/main.py
+      - name: Smoke test the built exe
+        shell: bash
+        run: QT_QPA_PLATFORM=offscreen ./dist/ShopBilling/ShopBilling.exe --demo --shot "$RUNNER_TEMP/exeshots"
+      - name: Upload app bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShopBilling-windows
+          path: dist/ShopBilling/
