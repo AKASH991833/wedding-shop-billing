@@ -178,21 +178,78 @@ def restore_db(src_path, demo=False):
 
 # ---- rental returns, availability, refunds ----
 
-def rental_out_qty(con, item_name, date_from, date_to):
-    """Qty booked out overlapping [date_from, date_to). A booking occupies
-    [bill_date, return_date): an item is free again ON its return_date."""
-    row = con.execute("""
-      SELECT IFNULL(SUM(i.qty),0) FROM bill_items i
+# Business policy (explicit, adjustable): with SAME_DAY_TURNAROUND=True an item is
+# available for a new booking ON its scheduled return date; with False it is occupied
+# through the return date and free the next day. Applies to SCHEDULING only - overdue
+# unreturned stock is never released by the calendar alone (see rental_out_qty).
+SAME_DAY_TURNAROUND = True
+
+def _open_rentals(con, item_name):
+    return con.execute("""
+      SELECT i.qty, b.id AS bill_id, b.bill_no, b.bill_date, b.return_date, b.returned_at, c.name AS customer
+      FROM bill_items i
       JOIN bills b ON b.id=i.bill_id
+      JOIN customers c ON c.id=b.customer_id
       WHERE i.kind='RENTAL' AND i.description=? AND b.returned_at IS NULL
-        AND date(b.bill_date) < date(?) AND date(IFNULL(b.return_date, b.bill_date)) > date(?)
-    """, (item_name, date_to, date_from)).fetchone()
-    return row[0]
+    """, (item_name,)).fetchall()
+
+def rental_out_qty(con, item_name, date_from, date_to, today=None):
+    """Qty unavailable for a PROPOSED reservation window [date_from, date_to).
+    Counts unreturned bookings whose schedule overlaps the window, PLUS any overdue
+    unreturned booking - a booking whose return_date has passed without an actual
+    return stays out of stock until someone records the physical return."""
+    today = today or datetime.date.today().isoformat()
+    out = 0
+    for r in _open_rentals(con, item_name):
+        if r["bill_date"] >= date_to:
+            continue  # starts after the queried window
+        scheduled_end = r["return_date"] or r["bill_date"]
+        overlaps = scheduled_end > date_from if SAME_DAY_TURNAROUND else scheduled_end >= date_from
+        overdue = r["return_date"] is not None and r["return_date"] < today
+        if overlaps or overdue:
+            out += r["qty"]
+    return out
 
 def rental_availability(con, item_id, date_from, date_to):
     it = con.execute("SELECT name,total_qty FROM inventory WHERE id=?", (item_id,)).fetchone()
     if not it: return None
     return it["total_qty"] - rental_out_qty(con, it["name"], date_from, date_to)
+
+def physical_on_hand(con, item_id, today=None):
+    """Actual stock in the shop right now: total minus qty out on unreturned bookings
+    that have already started. Overdue items count as out until physically returned."""
+    today = today or datetime.date.today().isoformat()
+    it = con.execute("SELECT name,total_qty FROM inventory WHERE id=?", (item_id,)).fetchone()
+    if not it: return None
+    out_qty = sum(r["qty"] for r in _open_rentals(con, it["name"]) if r["bill_date"] <= today)
+    return it["total_qty"] - out_qty
+
+def overdue_rentals(con, today=None):
+    """Unreturned rental lines past their return date. These must be chased and must
+    block/conflict new reservations for the same items."""
+    today = today or datetime.date.today().isoformat()
+    rows = con.execute("""
+      SELECT b.id AS bill_id, b.bill_no, c.name AS customer, c.mobile,
+             i.description, i.qty, b.return_date
+      FROM bills b JOIN customers c ON c.id=b.customer_id
+      JOIN bill_items i ON i.bill_id=b.id
+      WHERE i.kind='RENTAL' AND b.returned_at IS NULL
+        AND b.return_date IS NOT NULL AND date(b.return_date) < date(?)
+      ORDER BY b.return_date
+    """, (today,)).fetchall()
+    t = datetime.date.fromisoformat(today)
+    return [dict(r) | {"days_overdue": (t - datetime.date.fromisoformat(r["return_date"])).days}
+            for r in rows]
+
+def check_reservation(con, item_id, date_from, date_to):
+    """Availability for a proposed booking, with overdue conflicts flagged separately
+    so the shop can chase the physical return before promising the item."""
+    it = con.execute("SELECT name,total_qty FROM inventory WHERE id=?", (item_id,)).fetchone()
+    if not it: return None
+    avail = it["total_qty"] - rental_out_qty(con, it["name"], date_from, date_to)
+    conflicts = [r for r in overdue_rentals(con) if r["description"] == it["name"]]
+    return {"item": it["name"], "total": it["total_qty"], "available": avail,
+            "overdue_conflicts": conflicts}
 
 def mark_returned(con, bill_id, returned_at):
     """Marks garments physically back. Does NOT touch the deposit - the refund
