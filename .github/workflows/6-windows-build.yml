@@ -1,0 +1,47 @@
+name: Windows build + tests
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r desktop/requirements.txt pyinstaller
+      - name: Data-layer tests
+        run: python desktop/tests/test_db.py
+      - name: Offscreen UI smoke test (demo mode, screenshots)
+        shell: bash
+        run: QT_QPA_PLATFORM=offscreen python desktop/app/main.py --demo --shot "$RUNNER_TEMP/shots"
+      - name: Check sha256 backends in runner Python (informational)
+        run: python -c "import hashlib, importlib.util; print('sha256 ok:', hashlib.sha256(b'x').hexdigest()[:16]); print('_sha2 module present:', importlib.util.find_spec('_sha2') is not None)"
+      - name: Build Windows app (PyInstaller one-dir)
+        run: pyinstaller --windowed --name ShopBilling --add-data "desktop/app/style.qss;." --exclude-module ssl --exclude-module _ssl --exclude-module PySide6.QtNetwork --exclude-module PySide6.QtSvg desktop/app/main.py
+      - name: Trim unused Qt payload
+        shell: bash
+        run: |
+          rm -f dist/ShopBilling/_internal/PySide6/opengl32sw.dll
+          # QtNetwork/QtSvg python modules are excluded from the build; their DLLs are unused payload
+          rm -f dist/ShopBilling/_internal/PySide6/Qt6Network.dll dist/ShopBilling/_internal/PySide6/Qt6Svg.dll
+          rm -f dist/ShopBilling/_internal/PySide6/plugins/platforms/qdirect2d.dll
+          rm -f dist/ShopBilling/_internal/PySide6/plugins/imageformats/qgif.dll dist/ShopBilling/_internal/PySide6/plugins/imageformats/qicns.dll dist/ShopBilling/_internal/PySide6/plugins/imageformats/qsvg.dll dist/ShopBilling/_internal/PySide6/plugins/imageformats/qtga.dll dist/ShopBilling/_internal/PySide6/plugins/imageformats/qwbmp.dll dist/ShopBilling/_internal/PySide6/plugins/imageformats/qtiff.dll dist/ShopBilling/_internal/PySide6/plugins/imageformats/qwebp.dll
+          rm -rf dist/ShopBilling/_internal/PySide6/translations
+      - name: Frozen exe password selftest (create/verify/reject + restart unlock)
+        shell: bash
+        timeout-minutes: 5
+        run: QT_QPA_PLATFORM=offscreen ./dist/ShopBilling/ShopBilling.exe --selftest
+      - name: Smoke test the built exe
+        shell: bash
+        timeout-minutes: 5
+        run: QT_QPA_PLATFORM=offscreen ./dist/ShopBilling/ShopBilling.exe --demo --shot "$RUNNER_TEMP/exeshots"
+      - name: Upload app bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShopBilling-windows
+          path: dist/ShopBilling/
